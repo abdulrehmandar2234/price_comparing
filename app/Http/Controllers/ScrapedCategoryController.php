@@ -43,63 +43,62 @@ class ScrapedCategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $category_links = CategoryLink::with('website.category_node')->get();
+        $category_links = CategoryLink::where('created_at', '>=', Carbon::today())->where('last_updated', Carbon::today())->with('website.category_node')->get();
+
         $req = new RequestController();
         $pro_results = [];
         $store_results = [];
 
         foreach ($category_links as $category_link) {
-            if ($category_link['last_updated'] == "" || $category_link['last_updated'] < Carbon::today()) {
-                $node = $category_link->website->category_node;
 
-                if ($category_link->scrap_method == 'API') {
-                    $pro_results = $req->category_api_scrapper($category_link->website->website_name, $category_link->request_type, $node['main_listing_node'], $category_link->category_link, $node['title'], $node['brand'], $node['description'], $node['price'], $node['unit_price'], $node['discount_percentage'], $node['discount_price'], $node['image'], $node['image_url'], $node['rating'], $node['product_link'], $node['slug']);
-                }
-                if ($category_link->scrap_method == 'HTML') {
-                    $pro_results = $req->category_url_scrapper($category_link->website->website_name, $category_link->request_type, $node['main_listing_node'], $category_link->category_link, $node['title'], $node['brand'], $node['description'], $node['price'], $node['unit_price'], $node['discount_percentage'], $node['discount_price'], $node['image'], $node['image_url'], $node['rating'], $node['product_link'], $node['slug']);
-                }
+            $node = $category_link->website->category_node;
 
-                foreach ($pro_results as $pro_result) {
-
-                    // $get_domain = parse_url($category_link->website->website_url);
-                    // $domain = $get_domain['host'];
-                    if (isset($pro_result['image'])) {
-                        // if (strpos($domain, $pro_result['image']) !== false) {
-                        $url = $pro_result['image'];
-
-                        $contents = file_get_contents($url);
-
-                        $name = substr($url, strrpos($url, '/') + 1);
-                        Storage::disk('public')->put($name, $contents);
-                        $image = $name;
-
-                        // }
-                        // else {
-
-                        //     $url = $pro_result['image'];
-                        //     dd($url);
-                        //     $contents = file_get_contents($url);
-                        //     $name = substr($url, strrpos($url, '/') + 1);
-                        //     Storage::disk('public')->put($name, $contents);
-                        //     $image = $name;
-                        // }
-                    }
-
-                    $store_results[] = ['title' => $pro_result['title'], 'description' => isset($pro_result['description']) ? $pro_result['description'] : '',
-                        'brand' => isset($pro_result['brand']) ? $pro_result['brand'] : '',
-                        'price' => isset($pro_result['price']) ? $pro_result['price'] : '',
-                        'unit_price' => isset($pro_result['unit_price']) ? $pro_result['unit_price'] : '',
-                        'discount_percentage' => isset($pro_result['discount_percentage']) ? $pro_result['discount_percentage'] : '',
-                        'discount_price' => isset($pro_result['discount_price']) ? $pro_result['discount_price'] : '',
-                        'rating' => isset($pro_result['rating']) ? $pro_result['rating'] : '',
-                        'product_link' => isset($pro_result['product_link']) ? $pro_result['product_link'] : '',
-                        'last_updated' => Carbon::now(), 'category_id' => $category_link['category_id'], 'website_id' => $category_link['website_id'], 'image' => isset($image) ? $image : ''];
-                    DB::table('category_links')->where('id', $category_link->id)->update(['last_updated' => Carbon::now()]);
-
-                }
-                ScrapedCategory::insert($store_results);
+            if ($category_link->scrap_method == 'API') {
+                $pro_results = $req->category_api_scrapper($category_link->website->website_name, $category_link->request_type, $node['main_listing_node'], $category_link->category_link, $node['title'], $node['brand'], $node['description'], $node['price'], $node['unit_price'], $node['discount_percentage'], $node['discount_price'], $node['image'], $node['image_url'], $node['rating'], $node['product_link'], $node['slug']);
+            }
+            if ($category_link->scrap_method == 'HTML') {
+                $pro_results = $req->category_url_scrapper($category_link->website->website_name, $category_link->request_type, $node['main_listing_node'], $category_link->category_link, $node['title'], $node['brand'], $node['description'], $node['price'], $node['unit_price'], $node['discount_percentage'], $node['discount_price'], $node['image'], $node['image_url'], $node['rating'], $node['product_link'], $node['slug']);
             }
 
+            foreach ($pro_results as $pro_result) {
+
+                // $get_domain = parse_url($category_link->website->website_url);
+                // $domain = $get_domain['host'];
+                if (isset($pro_result['image'])) {
+                    // if (strpos($domain, $pro_result['image']) !== false) {
+                    $url = $pro_result['image'];
+
+                    $contents = file_get_contents($url);
+
+                    $name = substr($url, strrpos($url, '/') + 1);
+                    Storage::disk('public')->put($name, $contents);
+                    $image = $name;
+
+                    // }
+                    // else {
+
+                    //     $url = $pro_result['image'];
+                    //     dd($url);
+                    //     $contents = file_get_contents($url);
+                    //     $name = substr($url, strrpos($url, '/') + 1);
+                    //     Storage::disk('public')->put($name, $contents);
+                    //     $image = $name;
+                    // }
+                }
+
+                $store_results[] = ['title' => $pro_result['title'], 'description' => isset($pro_result['description']) ? $pro_result['description'] : '',
+                    'brand' => isset($pro_result['brand']) ? $pro_result['brand'] : '',
+                    'price' => isset($pro_result['price']) ? $pro_result['price'] : '',
+                    'unit_price' => isset($pro_result['unit_price']) ? $pro_result['unit_price'] : '',
+                    'discount_percentage' => isset($pro_result['discount_percentage']) ? $pro_result['discount_percentage'] : '',
+                    'discount_price' => isset($pro_result['discount_price']) ? $pro_result['discount_price'] : '',
+                    'rating' => isset($pro_result['rating']) ? $pro_result['rating'] : '',
+                    'product_link' => isset($pro_result['product_link']) ? $pro_result['product_link'] : '',
+                    'last_updated' => Carbon::now(), 'category_id' => $category_link['category_id'], 'website_id' => $category_link['website_id'], 'image' => isset($image) ? $image : ''];
+                DB::table('category_links')->where('id', $category_link->id)->update(['last_updated' => Carbon::yesterday()]);
+
+            }
+            ScrapedCategory::insert($store_results);
         }
         return redirect(route('scraped_categories.index'))->with('success', 'Category Scraped successfully');
 

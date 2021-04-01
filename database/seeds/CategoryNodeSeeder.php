@@ -39,7 +39,7 @@ class CategoryNodeSeeder extends Seeder
                 'title' => '.product-item-header h3',
                 'description' => '',
                 'brand' => '.product-item-header .product-item-brand',
-                'price' => '.product-item-price p',
+                'price' => '.product-item-price',
                 'unit_price' => '.product-item-quantity-price',
                 'discount_percentage' => '',
                 'discount_price' => '',

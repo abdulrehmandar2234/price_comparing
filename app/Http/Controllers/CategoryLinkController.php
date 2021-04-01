@@ -45,6 +45,8 @@ class CategoryLinkController extends Controller
             'category_link' => ['required', 'unique:category_links'],
         ]);
         $input = $request->all();
+        $input['last_updated'] = today();
+
         CategoryLink::create($input);
 
         return redirect()->route('category_links.index')->with('success', 'Category Link Added successfully');

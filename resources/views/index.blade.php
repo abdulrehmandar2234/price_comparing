@@ -269,7 +269,13 @@
                                                 </div>
                                                 <div style="height: 380px;">
                                                 <div class="mb-2">
-                                                    <a  data-id="{{ $pro->id }}" class="d-block text-center single-product-ajax"><img style="height: 300px; width:280px" class="img-fluid" src="{{asset('product').'/'.$pro->image}}" alt="" ></a>
+                                                    <a  data-id="{{ $pro->id }}" class="d-block text-center single-product-ajax">
+                                                        @if(isset($pro->image))
+                                                        <img style="height: 300px; width:280px" class="img-fluid" src="{{asset('product').'/'.$pro->image}}" alt="" >
+                                                        @else
+                                                        <img style="height: 300px; width:280px" class="img-fluid" src="{{asset('product').'/'.'proplaceholder.png'}}" alt="" >
+                                                        @endif
+                                                    </a>
                                                    <h5 class="mb-5 product-item__title">{{$pro->title}}</h5>
                                                 </div>
                                                 

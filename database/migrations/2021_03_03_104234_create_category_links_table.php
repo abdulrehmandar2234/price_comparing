@@ -21,7 +21,7 @@ class CreateCategoryLinksTable extends Migration
             $table->string('scrap_method');
             $table->unsignedBigInteger('category_id');
             $table->unsignedBigInteger('website_id');
-            $table->string('last_updated')->default(Carbon::yesterday());
+            $table->string('last_updated')->default(Carbon::today());
             $table->timestamps();
         });
     }
